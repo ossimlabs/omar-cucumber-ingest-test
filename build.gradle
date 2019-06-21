@@ -33,7 +33,7 @@ if(project.hasProperty("runTags"))
 
 
 repositories {
-    maven { url "${nexusRepo}" }
+    maven { url nexusRepo }
 }
 
 dependencies {
