@@ -1,5 +1,5 @@
-@local_staging_service
-Feature: StagingService
+# @local_staging_service
+# Feature: StagingService
 
 Scenario Outline: [LSTG-01] Make a given IMAGE available for discovery
   Given the image <image-name> is not already indexed - local ingest
