@@ -1,5 +1,5 @@
-@direct_s3_staging_service
-Feature: StagingService
+# @direct_s3_staging_service
+# Feature: StagingService
 
 Scenario Outline: [DSTG-01] Make a given IMAGE available for discovery
   Given the image <image-name> is not already indexed - direct s3 ingest
