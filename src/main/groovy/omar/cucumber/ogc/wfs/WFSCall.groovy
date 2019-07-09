@@ -57,7 +57,7 @@ class WFSCall
                 service     : "WFS",
                 version     : "1.1.0",
                 request     : "GetFeature",
-                typeName    : "omar:raster_entry",
+                typeName    : typeName,
                 resultType  : "results",
                 outputFormat: outputFormat,
                 filter      : URLEncoder.encode(filter, Charset.defaultCharset().displayName()),
