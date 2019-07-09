@@ -1,5 +1,5 @@
-# @staging_multi_ingest_service
-# Feature: StagingService
+@staging_multi_ingest_service
+Feature: StagingService
 
 Scenario Outline: [MSTG-01] Make a given IMAGE available for discovery
   Given the image <image-name> is not already staged - multi ingest
