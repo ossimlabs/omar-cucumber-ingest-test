@@ -82,6 +82,5 @@ node("${BUILD_NODE}"){
             if ("${CLEAN_WORKSPACE}" == "true")
             step([$class: 'WsCleanup'])
         }
-    }
-*/
+*/    }
 }
