@@ -29,7 +29,7 @@ gradleTask = "buildDockerImage"
 
 node("${BUILD_NODE}"){
 
-    try {
+//    try {
         stage ("Build Docker Image")
         {
             withCredentials([[$class: 'UsernamePasswordMultiBinding',
@@ -82,5 +82,5 @@ node("${BUILD_NODE}"){
             if ("${CLEAN_WORKSPACE}" == "true")
             step([$class: 'WsCleanup'])
         }
-*/    }
+*///    }
 }
