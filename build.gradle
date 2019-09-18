@@ -106,6 +106,13 @@ if (!System.getProperty("cUname") && !System.getProperty("cPword"))
     cPword = System.getenv("CURL_PASSWORD")
 }
 
+if (System.env['JENKINS_HOME']) {
+    task jenkinsProps(type: WriteProperties) {
+        outputFile file('build/jenkins.properties')
+        property 'myProp', 'myValue'
+    }
+}
+
 run {
     if (multi == "true")
     {
