@@ -30,6 +30,27 @@ gradleTask = "buildDockerImage"
 node("${BUILD_NODE}"){
 
 //    try {
+
+    stage("Checkout branch $BRANCH_NAME")
+    {
+        checkout(scm)
+    }
+
+        stage("Load Variables")
+        {
+            withCredentials([string(credentialsId: 'o2-artifact-project', variable: 'o2ArtifactProject')]) {
+                step ([$class: "CopyArtifact",
+                    projectName: o2ArtifactProject,
+                    filter: "common-variables.groovy",
+                    flatten: true])
+                step ([$class: "CopyArtifact",
+                    projectName: o2ArtifactProject,
+                    filter: "cucumber-configs/cucumber-config-ingest.groovy",
+                    flatten: true])
+            }
+            load "common-variables.groovy"
+        }
+
         stage ("Build Docker Image")
         {
             withCredentials([[$class: 'UsernamePasswordMultiBinding',
