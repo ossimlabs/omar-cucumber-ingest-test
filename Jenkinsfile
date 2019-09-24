@@ -2,6 +2,7 @@ properties([
     parameters ([
         string(name: 'BUILD_NODE', defaultValue: 'omar-build', description: 'The build node to run on'),
         string(name: 'TARGET_DEPLOYMENT', defaultValue: 'dev', description: 'The deployment to run the tests against'),
+        string(name: 'CLEAN_WORKSPACE', defaultValue: true, description: 'Clean the workspace at the end of the run'),
     ]),
     pipelineTriggers([
             [$class: "GitHubPushTrigger"]
@@ -54,17 +55,7 @@ node("${BUILD_NODE}"){
                 """
             }
         }
-            step([$class: 'CucumberReportPublisher',
-                fileExcludePattern: '',
-                fileIncludePattern: '',
-                ignoreFailedTests: false,
-                jenkinsBasePath: '',
-                jsonReportDirectory: "build",
-                parallelTesting: false,
-                pendingFails: false,
-                skippedFails: false,
-                undefinedFails: false])
-       
+
         stage("Clean Workspace") {
             if ("${CLEAN_WORKSPACE}" == "true")
             step([$class: 'WsCleanup'])
