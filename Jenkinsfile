@@ -2,8 +2,6 @@ properties([
     parameters ([
         string(name: 'BUILD_NODE', defaultValue: 'omar-build', description: 'The build node to run on'),
         string(name: 'TARGET_DEPLOYMENT', defaultValue: 'dev', description: 'The deployment to run the tests against'),
-//        booleanParam(name: 'MULTI_INGEST', defaultValue: false, description: 'Run a multi-ingest test'),
-//        booleanParam(name: 'CLEAN_WORKSPACE', defaultValue: true, description: 'Clean the workspace at the end of the run'),
     ]),
     pipelineTriggers([
             [$class: "GitHubPushTrigger"]
@@ -14,22 +12,12 @@ properties([
 ])
 
 String gradleTask
-//String outputJson
 
 gradleTask = "buildDockerImage"
 
 
-//if ("${MULTI_INGEST}" == "true") {
-//    gradleTask = "ingestMultipleImages"
-//    outputJson = "ingestMultipleImages.json"
-//} else {
-//    gradleTask = "ingest"
-//    outputJson = "ingest.json"
-//}
 
 node("${BUILD_NODE}"){
-
-//    try {
 
     stage("Checkout branch $BRANCH_NAME")
     {
@@ -66,27 +54,6 @@ node("${BUILD_NODE}"){
                 """
             }
         }
-
-/*    withCredentials([[$class: 'UsernamePasswordMultiBinding',
-               credentialsId: 'dockerCredentials',
-               usernameVariable: 'DOCKER_REGISTRY_USERNAME',
-               passwordVariable: 'DOCKER_REGISTRY_PASSWORD']])
-      {
-         stage("Tag Images") {
-            dir("ossim-ci/merge-to-master"){
-               sh "chmod a+x ./tag-images.sh && ./tag-images.sh --list-file ./tag-container-images-list.txt"
-            }
-         }
-      }
-    }
-
-    finally {
-        stage("Archive"){
-            sh "cp build/${outputJson} ."
-            archiveArtifacts "${outputJson}"
-        }
-
-        stage("Publish Report") {
             step([$class: 'CucumberReportPublisher',
                 fileExcludePattern: '',
                 fileIncludePattern: '',
@@ -103,5 +70,4 @@ node("${BUILD_NODE}"){
             if ("${CLEAN_WORKSPACE}" == "true")
             step([$class: 'WsCleanup'])
         }
-*///    }
 }
