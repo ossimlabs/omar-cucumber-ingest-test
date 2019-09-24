@@ -64,7 +64,6 @@ node("${BUILD_NODE}"){
                 pendingFails: false,
                 skippedFails: false,
                 undefinedFails: false])
-        }
        
         stage("Clean Workspace") {
             if ("${CLEAN_WORKSPACE}" == "true")
