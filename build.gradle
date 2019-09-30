@@ -74,6 +74,8 @@ dependencies {
         exclude module: "gt-jdbc-spatialite"
     }
 
+    classpath "io.ossim:gradleDefaults:${gradleDefaultsV}"
+
     cucumberRuntime files( "${jar.archivePath}" )
 }
 
