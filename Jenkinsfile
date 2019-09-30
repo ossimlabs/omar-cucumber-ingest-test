@@ -25,39 +25,73 @@ node("${BUILD_NODE}"){
         checkout(scm)
     }
 
-        stage("Load Variables")
-        {
-            withCredentials([string(credentialsId: 'o2-artifact-project', variable: 'o2ArtifactProject')]) {
-                step ([$class: "CopyArtifact",
-                    projectName: o2ArtifactProject,
-                    filter: "common-variables.groovy",
-                    flatten: true])
-                step ([$class: "CopyArtifact",
-                    projectName: o2ArtifactProject,
-                    filter: "cucumber-configs/cucumber-config-ingest.groovy",
-                    flatten: true])
-            }
-            load "common-variables.groovy"
+    stage("Load Variables")
+    {
+        withCredentials([string(credentialsId: 'o2-artifact-project', variable: 'o2ArtifactProject')]) {
+            step ([$class: "CopyArtifact",
+                projectName: o2ArtifactProject,
+                filter: "common-variables.groovy",
+                flatten: true])
+            step ([$class: "CopyArtifact",
+                projectName: o2ArtifactProject,
+                filter: "cucumber-configs/cucumber-config-ingest.groovy",
+                flatten: true])
         }
+        load "common-variables.groovy"
+    }
 
-        stage ("Build Docker Image")
+    stage ("Build Docker Image")
+    {
+        withCredentials([[$class: 'UsernamePasswordMultiBinding',
+                   credentialsId: 'curlCredentials',
+                   usernameVariable: 'CURL_USER_NAME',
+                   passwordVariable: 'CURL_PASSWORD']])
+        {
+            sh """
+                echo "TARGET_DEPLOYMENT = ${TARGET_DEPLOYMENT}"
+                export CUCUMBER_CONFIG_LOCATION="cucumber-config-ingest.groovy"
+                export DISPLAY=":1"
+                gradle ${gradleTask}
+            """
+        }
+    }
+
+    stage ("Publish Docker App")
+    {
+        withCredentials([[$class: 'UsernamePasswordMultiBinding',
+                        credentialsId: 'dockerCredentials',
+                        usernameVariable: 'DOCKER_REGISTRY_USERNAME',
+                        passwordVariable: 'DOCKER_REGISTRY_PASSWORD']])
+        {
+            // Run all tasks on the app. This includes pushing to OpenShift and S3.
+            sh """
+            gradle pushDockerImage \
+                -PossimMavenProxy=${OSSIM_MAVEN_PROXY}
+            """
+        }
+    }
+
+    try {
+        stage ("OpenShift Tag Image")
         {
             withCredentials([[$class: 'UsernamePasswordMultiBinding',
-                        credentialsId: 'curlCredentials',
-                        usernameVariable: 'CURL_USER_NAME',
-                        passwordVariable: 'CURL_PASSWORD']])
+                            credentialsId: 'openshiftCredentials',
+                            usernameVariable: 'OPENSHIFT_USERNAME',
+                            passwordVariable: 'OPENSHIFT_PASSWORD']])
             {
+                // Run all tasks on the app. This includes pushing to OpenShift and S3.
                 sh """
-                    echo "TARGET_DEPLOYMENT = ${TARGET_DEPLOYMENT}"
-                    export CUCUMBER_CONFIG_LOCATION="cucumber-config-ingest.groovy"
-                    export DISPLAY=":1"
-                    gradle ${gradleTask}
+                    gradle openshiftTagImage \
+                        -PossimMavenProxy=${OSSIM_MAVEN_PROXY}
                 """
             }
         }
+    } catch (e) {
+        echo e.toString()
+    }
 
-        stage("Clean Workspace") {
-            if ("${CLEAN_WORKSPACE}" == "true")
-            step([$class: 'WsCleanup'])
-        }
+    stage("Clean Workspace") {
+        if ("${CLEAN_WORKSPACE}" == "true")
+        step([$class: 'WsCleanup'])
+    }
 }
