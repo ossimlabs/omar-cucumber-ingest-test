@@ -74,6 +74,9 @@ dependencies {
         exclude module: "gt-jdbc-spatialite"
     }
 
+    classpath "org.grails:grails-gradle-plugin:$grailsVersion"
+    classpath "com.bertramlabs.plugins:asset-pipeline-gradle:${assetPipelineGradleV}"
+    classpath "com.bmuschko:gradle-docker-plugin:${gradleDockerPluginV}"
     classpath "io.ossim:gradleDefaults:${gradleDefaultsV}"
 
     cucumberRuntime files( "${jar.archivePath}" )
