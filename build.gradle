@@ -142,9 +142,9 @@ import org.gradle.api.tasks.Exec
 
 docker {
     registryCredentials {
-        username.set("")
-        password.set("")
-        url.set("quay.io/radiantsolutions")
+        username.set("${dockerRegistryUsername}".toString())
+        password.set("${dockerRegistryPassword}".toString())
+        url.set("${dockerRegistryUrl}".toString())
     }
 }
 
