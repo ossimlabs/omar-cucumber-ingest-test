@@ -38,7 +38,6 @@ repositories {
 }
 
 dependencies {
-//    classpath 'io.ossim:gradleDefaults:1.8-SNAPSHOT'
     // Use the latest Groovy version for building this library
     implementation 'org.codehaus.groovy:groovy-all:2.5.4'
 
@@ -136,8 +135,18 @@ run {
 
 import com.bmuschko.gradle.docker.tasks.image.Dockerfile
 import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
-// import com.bmuschko.gradle.docker.tasks.image.DockerTagImage
+import com.bmuschko.gradle.docker.tasks.image.DockerTagImage
 import com.bmuschko.gradle.docker.tasks.image.DockerPushImage
+import org.gradle.api.Project
+import org.gradle.api.tasks.Exec
+
+docker {
+    registryCredentials {
+        username.set("")
+        password.set("")
+        url.set("quay.io/radiantsolutions")
+    }
+}
 
 task createDockerfile(type: Dockerfile) {
     dependsOn shadowJar
@@ -173,10 +182,37 @@ task copyFile(type: Copy) {
 
 task buildDockerImage(type: DockerBuildImage) {
     dependsOn copyFile
-//    tags.add("${project.name}:latest")
     tags.add("${project.name}:${buildVersion}")
 }
 
-task pushDockerImage(type: DockerPushImage) {
+task tagDockerImage(type: DockerTagImage) {
     dependsOn buildDockerImage
+    targetImageId "${project.name}:${buildVersion}"
+    tag.set("${buildVersion}".toString())
+    repository.set("${dockerRegistryUrl}/${project.name}".toString())
+}
+
+task pushDockerImage(type: DockerPushImage) {
+    dependsOn tagDockerImage
+    registryCredentials = registryCredentials
+    imageName.set("${dockerRegistryUrl}/${project.name}".toString())
+    tag.set("${buildVersion}".toString())
+}
+
+task openshiftLogin(type: Exec) {
+    commandLine 'oc',
+            'login',
+            openshiftUrl,
+            '-u', openshiftUsername,
+            '-p', openshiftPassword
+}
+
+task openshiftTagImage(type: Exec) {
+    dependsOn openshiftLogin
+    commandLine 'oc',
+            'tag',
+            '--source=docker',
+            "${dockerRegistryUrl}${dockerImageName}:${dockerImageTag}",
+            "${openshiftProjectName}/${openshiftServiceName}:${dockerImageTag}",
+            '--scheduled=true'
 }
