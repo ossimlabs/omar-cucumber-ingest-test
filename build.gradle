@@ -37,6 +37,7 @@ repositories {
 }
 
 dependencies {
+//    classpath 'io.ossim:gradleDefaults:1.8-SNAPSHOT'
     // Use the latest Groovy version for building this library
     implementation 'org.codehaus.groovy:groovy-all:2.5.4'
 
@@ -129,6 +130,8 @@ run {
 
 import com.bmuschko.gradle.docker.tasks.image.Dockerfile
 import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
+import com.bmuschko.gradle.docker.tasks.image.DockerTagImage
+import com.bmuschko.gradle.docker.tasks.image.DockerPushImage
 
 task createDockerfile(type: Dockerfile) {
     dependsOn shadowJar
@@ -164,5 +167,17 @@ task copyFile(type: Copy) {
 
 task buildDockerImage(type: DockerBuildImage) {
     dependsOn copyFile
-    tags.add("${project.name}:latest")
+//    tags.add("${project.name}:latest")
+    tags.add("${project.name}:${buildVersion}")
+}
+
+//task tagDockerImage(type: DockerTagImage) {
+//    dependsOn buildDockerImage
+//    imageId "${project.name}:${buildVersion}"
+//    tag dockerBuildTag
+//    repository "${dockerRegistryUrl}/${dockerImageName}"
+//}
+
+task pushDockerImage(type: DockerPushImage) {
+    dependsOn buildDockerImage
 }
