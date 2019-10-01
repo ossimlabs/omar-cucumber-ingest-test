@@ -76,10 +76,10 @@ dependencies {
         exclude module: "gt-jdbc-spatialite"
     }
 
-    classpath "org.grails:grails-gradle-plugin:$grailsVersion"
-    classpath "com.bertramlabs.plugins:asset-pipeline-gradle:${assetPipelineGradleV}"
-    classpath "com.bmuschko:gradle-docker-plugin:${gradleDockerPluginV}"
-    classpath "io.ossim:gradleDefaults:${gradleDefaultsV}"
+//    classpath "org.grails:grails-gradle-plugin:$grailsVersion"
+//    classpath "com.bertramlabs.plugins:asset-pipeline-gradle:${assetPipelineGradleV}"
+//    classpath "com.bmuschko:gradle-docker-plugin:${gradleDockerPluginV}"
+//    classpath "io.ossim:gradleDefaults:${gradleDefaultsV}"
 
     cucumberRuntime files( "${jar.archivePath}" )
 }
@@ -136,7 +136,7 @@ run {
 
 import com.bmuschko.gradle.docker.tasks.image.Dockerfile
 import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
-import com.bmuschko.gradle.docker.tasks.image.DockerTagImage
+// import com.bmuschko.gradle.docker.tasks.image.DockerTagImage
 import com.bmuschko.gradle.docker.tasks.image.DockerPushImage
 
 task createDockerfile(type: Dockerfile) {
@@ -176,13 +176,6 @@ task buildDockerImage(type: DockerBuildImage) {
 //    tags.add("${project.name}:latest")
     tags.add("${project.name}:${buildVersion}")
 }
-
-//task tagDockerImage(type: DockerTagImage) {
-//    dependsOn buildDockerImage
-//    imageId "${project.name}:${buildVersion}"
-//    tag dockerBuildTag
-//    repository "${dockerRegistryUrl}/${dockerImageName}"
-//}
 
 task pushDockerImage(type: DockerPushImage) {
     dependsOn buildDockerImage
