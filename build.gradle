@@ -194,7 +194,7 @@ task tagDockerImage(type: DockerTagImage) {
 
 task pushDockerImage(type: DockerPushImage) {
     dependsOn tagDockerImage
-    registryCredentials = registryRegistryCredentials
+    registryCredentials = registryCredentials
     imageName.set("${dockerRegistryUrl}/${project.name}".toString())
     tag.set("${buildVersion}".toString())
 }
