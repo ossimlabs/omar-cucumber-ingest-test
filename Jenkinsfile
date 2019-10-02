@@ -42,8 +42,8 @@ node("${BUILD_NODE}"){
     {
         withCredentials([[$class: 'UsernamePasswordMultiBinding',
                    credentialsId: 'curlCredentials',
-                   usernameVariable: 'CURL_USER_NAME',
-                   passwordVariable: 'CURL_PASSWORD']])
+                   usernameVariable: 'ORG_GRADLE_PROJECT_cUname',
+                   passwordVariable: 'ORG_GRADLE_PROJECT_cPword']])
         {
             sh """
                 echo "TARGET_DEPLOYMENT = ${TARGET_DEPLOYMENT}"
@@ -58,8 +58,8 @@ node("${BUILD_NODE}"){
     {
         withCredentials([[$class: 'UsernamePasswordMultiBinding',
                         credentialsId: 'dockerCredentials',
-                        usernameVariable: 'DOCKER_REGISTRY_USERNAME',
-                        passwordVariable: 'DOCKER_REGISTRY_PASSWORD']])
+                        usernameVariable: 'ORG_GRADLE_PROJECT_dockerRegistryUsername',
+                        passwordVariable: 'ORG_GRADLE_PROJECT_dockerRegistryPassword']])
         {
             sh """
             docker login $DOCKER_REGISTRY_URL \
