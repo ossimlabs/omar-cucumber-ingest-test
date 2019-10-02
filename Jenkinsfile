@@ -12,10 +12,6 @@ properties([
     disableConcurrentBuilds()
 ])
 
-String gradleTask
-
-gradleTask = "buildDockerImage"
-
 node("${BUILD_NODE}"){
 
     stage("Checkout branch $BRANCH_NAME")
@@ -38,36 +34,40 @@ node("${BUILD_NODE}"){
         load "common-variables.groovy"
     }
 
-    stage ("Build Docker Image")
+    withCredentials([
+                       [$class: 'UsernamePasswordMultiBinding',
+                       credentialsId: 'curlCredentials',
+                       usernameVariable: 'ORG_GRADLE_PROJECT_cUname',
+                       passwordVariable: 'ORG_GRADLE_PROJECT_cPword'],
+                       [$class: 'UsernamePasswordMultiBinding',
+                       credentialsId: 'dockerCredentials',
+                       usernameVariable: 'ORG_GRADLE_PROJECT_dockerRegistryUsername',
+                       passwordVariable: 'ORG_GRADLE_PROJECT_dockerRegistryPassword']
+                    ])
     {
-        withCredentials([[$class: 'UsernamePasswordMultiBinding',
-                   credentialsId: 'curlCredentials',
-                   usernameVariable: 'ORG_GRADLE_PROJECT_cUname',
-                   passwordVariable: 'ORG_GRADLE_PROJECT_cPword']])
+        stage ("Build Docker Image")
         {
             sh """
                 echo "TARGET_DEPLOYMENT = ${TARGET_DEPLOYMENT}"
                 export CUCUMBER_CONFIG_LOCATION="cucumber-config-ingest.groovy"
                 export DISPLAY=":1"
-                gradle ${gradleTask}
+                gradle buildDockerImage
             """
         }
-    }
 
-    stage ("Publish Docker App")
-    {
-        withCredentials([[$class: 'UsernamePasswordMultiBinding',
-                        credentialsId: 'dockerCredentials',
-                        usernameVariable: 'ORG_GRADLE_PROJECT_dockerRegistryUsername',
-                        passwordVariable: 'ORG_GRADLE_PROJECT_dockerRegistryPassword']])
+        stage ("Publish Docker App")
         {
-            sh """
-            docker login $DOCKER_REGISTRY_URL \
-                                            --username=$DOCKER_REGISTRY_USERNAME \
-                                            --password=$DOCKER_REGISTRY_PASSWORD
-            gradle pushDockerImage \
-                -PossimMavenProxy=${OSSIM_MAVEN_PROXY}
-            """
+            withCredentials([])
+            {
+                sh """
+                   docker login $DOCKER_REGISTRY_URL \
+                    --username=$ORG_GRADLE_PROJECT_dockerRegistryUsername \
+                    --password=$ORG_GRADLE_PROJECT_dockerRegistryPassword
+
+                   gradle pushDockerImage \
+                       -PossimMavenProxy=${OSSIM_MAVEN_PROXY}
+                """
+            }
         }
     }
 

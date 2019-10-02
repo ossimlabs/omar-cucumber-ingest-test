@@ -108,12 +108,11 @@ run {
     }
 }
 
-import com.bmuschko.gradle.docker.tasks.image.Dockerfile
+
 import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
-import com.bmuschko.gradle.docker.tasks.image.DockerTagImage
 import com.bmuschko.gradle.docker.tasks.image.DockerPushImage
-import org.gradle.api.Project
-import org.gradle.api.tasks.Exec
+import com.bmuschko.gradle.docker.tasks.image.DockerTagImage
+import com.bmuschko.gradle.docker.tasks.image.Dockerfile
 
 docker {
     registryCredentials {
@@ -124,6 +123,10 @@ docker {
 }
 
 task createDockerfile(type: Dockerfile) {
+    println("HELLO")
+    println(cUname)
+    println(cPword)
+    println("HELLO END")
     dependsOn shadowJar
     from "${dockerBaseImage}:${dockerBaseImageTag}"
     label(['maintainer': 'MAXAR'])
