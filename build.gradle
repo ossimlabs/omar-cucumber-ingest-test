@@ -198,21 +198,3 @@ task pushDockerImage(type: DockerPushImage) {
     imageName.set("${dockerRegistryUrl}/${project.name}".toString())
     tag.set("${buildVersion}".toString())
 }
-
-task openshiftLogin(type: Exec) {
-    commandLine 'oc',
-            'login',
-            openshiftUrl,
-            '-u', openshiftUsername,
-            '-p', openshiftPassword
-}
-
-task openshiftTagImage(type: Exec) {
-    dependsOn openshiftLogin
-    commandLine 'oc',
-            'tag',
-            '--source=docker',
-            "${dockerRegistryUrl}${dockerImageName}:${dockerImageTag}",
-            "${openshiftProjectName}/${openshiftServiceName}:${dockerImageTag}",
-            '--scheduled=true'
-}

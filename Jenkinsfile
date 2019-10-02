@@ -16,8 +16,6 @@ String gradleTask
 
 gradleTask = "buildDockerImage"
 
-
-
 node("${BUILD_NODE}"){
 
     stage("Checkout branch $BRANCH_NAME")
@@ -63,7 +61,6 @@ node("${BUILD_NODE}"){
                         usernameVariable: 'DOCKER_REGISTRY_USERNAME',
                         passwordVariable: 'DOCKER_REGISTRY_PASSWORD']])
         {
-            // Run all tasks on the app. This includes pushing to OpenShift and S3.
             sh """
             docker login $DOCKER_REGISTRY_URL \
                                             --username=$DOCKER_REGISTRY_USERNAME \
@@ -72,25 +69,6 @@ node("${BUILD_NODE}"){
                 -PossimMavenProxy=${OSSIM_MAVEN_PROXY}
             """
         }
-    }
-
-    try {
-        stage ("OpenShift Tag Image")
-        {
-            withCredentials([[$class: 'UsernamePasswordMultiBinding',
-                            credentialsId: 'openshiftCredentials',
-                            usernameVariable: 'OPENSHIFT_USERNAME',
-                            passwordVariable: 'OPENSHIFT_PASSWORD']])
-            {
-                // Run all tasks on the app. This includes pushing to OpenShift and S3.
-                sh """
-                    gradle openshiftTagImage \
-                        -PossimMavenProxy=${OSSIM_MAVEN_PROXY}
-                """
-            }
-        }
-    } catch (e) {
-        echo e.toString()
     }
 
     stage("Clean Workspace") {
