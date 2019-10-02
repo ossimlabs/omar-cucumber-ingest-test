@@ -65,6 +65,9 @@ node("${BUILD_NODE}"){
         {
             // Run all tasks on the app. This includes pushing to OpenShift and S3.
             sh """
+            docker login $DOCKER_REGISTRY_URL \
+                                            --username=$DOCKER_REGISTRY_USERNAME \
+                                            --password=$DOCKER_REGISTRY_PASSWORD
             gradle pushDockerImage \
                 -PossimMavenProxy=${OSSIM_MAVEN_PROXY}
             """
