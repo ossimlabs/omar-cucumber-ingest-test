@@ -1,10 +1,15 @@
 @direct_s3_staging_service
 Feature: StagingService
 
-Scenario Outline: [DSTG-01] Make a given IMAGE available for discovery
-  Given the image <image-name> is not already indexed - direct s3 ingest
-  When the image <image-name> is indexed into OMAR - direct s3 ingest
-  Then the image <image-name> should be available - direct s3 ingest
+    Scenario: [DSTG-01] Make an AWS Remote QuickBirdPan NITF Direct S3 image available for discovery
+        Given an AWS Remote QuickBirdPan NITF S3 image is not already indexed
+        When an AWS Remote QuickBirdPan NITF S3 image is indexed into OMAR
+        Then an AWS Remote QuickBirdPan NITF S3 image should be available
+
+    Scenario: [DSTG-02] Make an AWS Remote QuickBirdPan NITF Direct mount image available for discovery
+        Given an AWS Remote QuickBirdPan NITF mount image is not already indexed
+        When an AWS Remote QuickBirdPan NITF mount image is indexed into OMAR
+        Then an AWS Remote QuickBirdPan NITF mount image should be available
 
   Examples:
     | image-name |

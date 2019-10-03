@@ -14,9 +14,9 @@ plugins {
     id 'application'
 
     id 'com.github.johnrengelman.shadow' version '4.0.2'
-    
+
     id 'java'
-    
+
     id 'com.bmuschko.docker-remote-api' version '4.6.2'
 }
 
@@ -59,7 +59,7 @@ dependencies {
     compile "org.apache.tomcat:tomcat-jasper:8.5.23"
     compile "org.apache.tomcat:tomcat-jasper-el:8.5.23"
     compile "org.apache.tomcat:tomcat-jsp-api:8.5.23"
-    
+
     compile("org.geoscript:geoscript-groovy:1.7.0"){
         exclude module: "ehcache"
         exclude module: "slf4j-log4j12"
