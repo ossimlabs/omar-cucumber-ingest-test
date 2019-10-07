@@ -139,6 +139,8 @@ task createDockerfile(type: Dockerfile) {
     runCommand('chmod -R 777 /home/omar')
     exposePort(8080)
     user('1001')
+    volume('/conf')
+    environmentVariable("CUCUMBER_CONFIG_LOCATION","/conf")
     workingDir('/home/omar')
     defaultCommand('java', '-server', '-Xms256m', '-Xmx1024m', '-Djava.awt.headless=true', '-XX:+CMSClassUnloadingEnabled', '-XX:+UseGCOverheadLimit', '-Djava.security.egd=file:/dev/./urandom', '-jar', "omar-cucumber-ingest-test-${version}.jar")
 }
