@@ -26,10 +26,6 @@ node("${BUILD_NODE}"){
                            projectName: o2ArtifactProject,
                            filter: "common-variables.groovy",
                            flatten: true])
-                    step ([$class: "CopyArtifact",
-                           projectName: o2ArtifactProject,
-                           filter: "cucumber-configs/cucumber-config-ingest.groovy",
-                           flatten: true])
                 }
                 load "common-variables.groovy"
             }
