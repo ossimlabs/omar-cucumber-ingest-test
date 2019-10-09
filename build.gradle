@@ -77,14 +77,6 @@ defaultTasks = ['shadowJar']
 
 version = "${buildVersion}"
 
-sourceSets {
-    main {
-        groovy {
-            srcDirs = ['src/main']
-        }
-    }
-}
-
 shadowJar {
     manifest {
         attributes 'Main-Class': 'omar.cucumber.ingest.test.App'
@@ -123,6 +115,7 @@ task createDockerfile(type: Dockerfile) {
     dependsOn shadowJar
     from "${dockerBaseImage}:${dockerBaseImageTag}"
     label(['maintainer': 'MAXAR'])
+    runCommand('yum -y update')
     runCommand('yum -y install java-1.8.0-openjdk')
     environmentVariable("CURL_USER_NAME", "${cUname}")
     environmentVariable("CURL_PASSWORD", "${cPword}")
