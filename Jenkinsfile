@@ -46,8 +46,7 @@ node("${BUILD_NODE}"){
                             withCredentials([])
                                     {
                                         sh """
-                   export CUCUMBER_CONFIG_LOCATION="cucumber-config-ingest.groovy"
-                   export DISPLAY=":1" 
+                   export DISPLAY=":1"
                    docker login $DOCKER_REGISTRY_URL \
                     --username=$ORG_GRADLE_PROJECT_dockerRegistryUsername \
                     --password=$ORG_GRADLE_PROJECT_dockerRegistryPassword
