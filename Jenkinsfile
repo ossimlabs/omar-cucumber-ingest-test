@@ -1,107 +1,76 @@
 properties([
-    parameters ([
-        string(name: 'BUILD_NODE', defaultValue: 'omar-build', description: 'The build node to run on'),
-        string(name: 'TARGET_DEPLOYMENT', defaultValue: 'dev', description: 'The deployment to run the tests against'),
-//        booleanParam(name: 'MULTI_INGEST', defaultValue: false, description: 'Run a multi-ingest test'),
-//        booleanParam(name: 'CLEAN_WORKSPACE', defaultValue: true, description: 'Clean the workspace at the end of the run'),
-    ]),
-    pipelineTriggers([
-            [$class: "GitHubPushTrigger"]
-    ]),
-    [$class: 'GithubProjectProperty', displayName: '', projectUrlStr: 'https://github.com/ossimlabs/omar-cucmber-ingest-test'],
-    buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '3', daysToKeepStr: '', numToKeepStr: '20')),
-    disableConcurrentBuilds()
+        parameters ([
+                string(name: 'BUILD_NODE', defaultValue: 'omar-build', description: 'The build node to run on'),
+                string(name: 'TARGET_DEPLOYMENT', defaultValue: 'dev', description: 'The deployment to run the tests against'),
+                booleanParam(name: 'CLEAN_WORKSPACE', defaultValue: true, description: 'Clean the workspace at the end of the run'),
+        ]),
+        pipelineTriggers([
+                [$class: "GitHubPushTrigger"]
+        ]),
+        [$class: 'GithubProjectProperty', displayName: '', projectUrlStr: 'https://github.com/ossimlabs/omar-cucumber-ingest-test'],
+        buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '3', daysToKeepStr: '', numToKeepStr: '20')),
+        disableConcurrentBuilds()
 ])
-
-String gradleTask
-//String outputJson
-
-gradleTask = "buildDockerImage"
-
-
-//if ("${MULTI_INGEST}" == "true") {
-//    gradleTask = "ingestMultipleImages"
-//    outputJson = "ingestMultipleImages.json"
-//} else {
-//    gradleTask = "ingest"
-//    outputJson = "ingest.json"
-//}
 
 node("${BUILD_NODE}"){
 
-//    try {
-
     stage("Checkout branch $BRANCH_NAME")
-    {
-        checkout(scm)
-    }
-
-        stage("Load Variables")
-        {
-            withCredentials([string(credentialsId: 'o2-artifact-project', variable: 'o2ArtifactProject')]) {
-                step ([$class: "CopyArtifact",
-                    projectName: o2ArtifactProject,
-                    filter: "common-variables.groovy",
-                    flatten: true])
-                step ([$class: "CopyArtifact",
-                    projectName: o2ArtifactProject,
-                    filter: "cucumber-configs/cucumber-config-ingest.groovy",
-                    flatten: true])
-            }
-            load "common-variables.groovy"
-        }
-
-        stage ("Build Docker Image")
-        {
-            withCredentials([[$class: 'UsernamePasswordMultiBinding',
-                        credentialsId: 'curlCredentials',
-                        usernameVariable: 'CURL_USER_NAME',
-                        passwordVariable: 'CURL_PASSWORD']])
             {
-                sh """
-                    echo "TARGET_DEPLOYMENT = ${TARGET_DEPLOYMENT}"
-                    export CUCUMBER_CONFIG_LOCATION="cucumber-config-ingest.groovy"
-                    export DISPLAY=":1"
-                    gradle ${gradleTask}
+                checkout(scm)
+            }
+
+    stage("Load Variables")
+            {
+                withCredentials([string(credentialsId: 'o2-artifact-project', variable: 'o2ArtifactProject')]) {
+                    step ([$class: "CopyArtifact",
+                           projectName: o2ArtifactProject,
+                           filter: "common-variables.groovy",
+                           flatten: true])
+                }
+                load "common-variables.groovy"
+            }
+
+    withCredentials([
+            [$class: 'UsernamePasswordMultiBinding',
+             credentialsId: 'curlCredentials',
+             usernameVariable: 'ORG_GRADLE_PROJECT_cUname',
+             passwordVariable: 'ORG_GRADLE_PROJECT_cPword'],
+            [$class: 'UsernamePasswordMultiBinding',
+             credentialsId: 'dockerCredentials',
+             usernameVariable: 'ORG_GRADLE_PROJECT_dockerRegistryUsername',
+             passwordVariable: 'ORG_GRADLE_PROJECT_dockerRegistryPassword']
+    ])
+            {
+                stage ("Publish Docker App")
+                        {
+                            withCredentials([])
+                                    {
+                                        sh """
+                   export DISPLAY=":1"
+                   docker login $DOCKER_REGISTRY_URL \
+                    --username=$ORG_GRADLE_PROJECT_dockerRegistryUsername \
+                    --password=$ORG_GRADLE_PROJECT_dockerRegistryPassword
+                   gradle pushDockerImage \
+                       -PossimMavenProxy=${OSSIM_MAVEN_PROXY} \
+                       -PbuildVersion=${dockerTagSuffixOrEmpty()}
                 """
+                                    }
+                        }
             }
-        }
 
-/*    withCredentials([[$class: 'UsernamePasswordMultiBinding',
-               credentialsId: 'dockerCredentials',
-               usernameVariable: 'DOCKER_REGISTRY_USERNAME',
-               passwordVariable: 'DOCKER_REGISTRY_PASSWORD']])
-      {
-         stage("Tag Images") {
-            dir("ossim-ci/merge-to-master"){
-               sh "chmod a+x ./tag-images.sh && ./tag-images.sh --list-file ./tag-container-images-list.txt"
-            }
-         }
-      }
-    }
-
-    finally {
-        stage("Archive"){
-            sh "cp build/${outputJson} ."
-            archiveArtifacts "${outputJson}"
-        }
-
-        stage("Publish Report") {
-            step([$class: 'CucumberReportPublisher',
-                fileExcludePattern: '',
-                fileIncludePattern: '',
-                ignoreFailedTests: false,
-                jenkinsBasePath: '',
-                jsonReportDirectory: "build",
-                parallelTesting: false,
-                pendingFails: false,
-                skippedFails: false,
-                undefinedFails: false])
-        }
-       
-        stage("Clean Workspace") {
-            if ("${CLEAN_WORKSPACE}" == "true")
+    stage("Clean Workspace") {
+        if ("${CLEAN_WORKSPACE}" == "true")
             step([$class: 'WsCleanup'])
-        }
-*///    }
+    }
+}
+
+/**
+ * Returns the docker image tag suffix, including the colon, or an empty string.
+ *
+ * @return Valid docker tag suffix, (e.g. ":someTag")
+ */
+String dockerTagSuffixOrEmpty() {
+    // We want to use the branch name if built in a multi-branch pipeline.
+    // Otherwise we want no tag to be used in order to not override the default tag.
+    if (env.BRANCH_NAME != null) return "${env.BRANCH_NAME}" else return ""
 }

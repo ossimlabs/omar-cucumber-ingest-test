@@ -14,10 +14,10 @@ plugins {
     id 'application'
 
     id 'com.github.johnrengelman.shadow' version '4.0.2'
-    
+
     id 'java'
-    
-    id 'com.bmuschko.docker-remote-api' version '4.8.1'
+
+    id 'com.bmuschko.docker-remote-api' version '4.6.2'
 }
 
 configurations {
@@ -33,26 +33,19 @@ if(project.hasProperty("runTags"))
 
 
 repositories {
-    maven { url nexusRepo }
+    maven { url ossimMavenProxy }
 }
 
 dependencies {
     // Use the latest Groovy version for building this library
     implementation 'org.codehaus.groovy:groovy-all:2.5.4'
 
-    // https://mvnrepository.com/artifact/com.github.mkolisnyk/cucumber-runner
     compile group: 'com.github.mkolisnyk', name: 'cucumber-runner', version: '1.3.5'
 
-    //compile "org.codehaus.groovy:groovy:2.5.4"
-
-    // https://mvnrepository.com/artifact/io.cucumber/cucumber-groovy
     compile group: 'io.cucumber', name: 'cucumber-groovy', version: '4.3.0'
 
-    // https://mvnrepository.com/artifact/io.cucumber/cucumber-junit
     testCompile group: 'io.cucumber', name: 'cucumber-junit', version: '4.3.1'
 
-    //testCompile 'junit:junit:4.11'
-    // https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api
     testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.5.0-M1'
 
     compile "com.amazonaws:aws-java-sdk-sqs:1.11.26"
@@ -65,7 +58,7 @@ dependencies {
     compile "org.apache.tomcat:tomcat-jasper:8.5.23"
     compile "org.apache.tomcat:tomcat-jasper-el:8.5.23"
     compile "org.apache.tomcat:tomcat-jsp-api:8.5.23"
-    
+
     compile("org.geoscript:geoscript-groovy:1.7.0"){
         exclude module: "ehcache"
         exclude module: "slf4j-log4j12"
@@ -84,33 +77,11 @@ defaultTasks = ['shadowJar']
 
 version = "${buildVersion}"
 
-
-sourceSets {
-    main {
-        groovy {
-            srcDirs = ['src/main']
-        }
-    }
-}
-
 shadowJar {
     manifest {
         attributes 'Main-Class': 'omar.cucumber.ingest.test.App'
     }
     classifier = ""
-}
-
-if (!System.getProperty("cUname") && !System.getProperty("cPword"))
-{
-    cUname = System.getenv("CURL_USER_NAME")
-    cPword = System.getenv("CURL_PASSWORD")
-}
-
-if (System.env['JENKINS_HOME']) {
-    task jenkinsProps(type: WriteProperties) {
-        outputFile file('build/jenkins.properties')
-        property 'myProp', 'myValue'
-    }
 }
 
 run {
@@ -127,13 +98,24 @@ run {
     }
 }
 
-import com.bmuschko.gradle.docker.tasks.image.Dockerfile
 import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
+import com.bmuschko.gradle.docker.tasks.image.DockerPushImage
+import com.bmuschko.gradle.docker.tasks.image.DockerTagImage
+import com.bmuschko.gradle.docker.tasks.image.Dockerfile
+
+docker {
+    registryCredentials {
+        username.set("${dockerRegistryUsername}".toString())
+        password.set("${dockerRegistryPassword}".toString())
+        url.set("${dockerRegistryUrl}".toString())
+    }
+}
 
 task createDockerfile(type: Dockerfile) {
     dependsOn shadowJar
     from "${dockerBaseImage}:${dockerBaseImageTag}"
     label(['maintainer': 'MAXAR'])
+    runCommand('yum -y update')
     runCommand('yum -y install java-1.8.0-openjdk')
     environmentVariable("CURL_USER_NAME", "${cUname}")
     environmentVariable("CURL_PASSWORD", "${cPword}")
@@ -150,6 +132,7 @@ task createDockerfile(type: Dockerfile) {
     runCommand('chmod -R 777 /home/omar')
     exposePort(8080)
     user('1001')
+    volume('/conf')
     workingDir('/home/omar')
     defaultCommand('java', '-server', '-Xms256m', '-Xmx1024m', '-Djava.awt.headless=true', '-XX:+CMSClassUnloadingEnabled', '-XX:+UseGCOverheadLimit', '-Djava.security.egd=file:/dev/./urandom', '-jar', "omar-cucumber-ingest-test-${version}.jar")
 }
@@ -164,5 +147,19 @@ task copyFile(type: Copy) {
 
 task buildDockerImage(type: DockerBuildImage) {
     dependsOn copyFile
-    tags.add("${project.name}:latest")
+    tags.add("${project.name}:${buildVersion}")
+}
+
+task tagDockerImage(type: DockerTagImage) {
+    dependsOn buildDockerImage
+    targetImageId "${project.name}:${buildVersion}"
+    tag.set("${buildVersion}".toString())
+    repository.set("${dockerRegistryUrl}/${project.name}".toString())
+}
+
+task pushDockerImage(type: DockerPushImage) {
+    dependsOn tagDockerImage
+    registryCredentials = registryCredentials
+    imageName.set("${dockerRegistryUrl}/${project.name}".toString())
+    tag.set("${buildVersion}".toString())
 }

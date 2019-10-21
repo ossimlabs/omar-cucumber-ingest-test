@@ -9,7 +9,7 @@
 
 pluginManagement {
   repositories {
-    maven { url nexusRepo }
+    maven { url ossimMavenProxy }
   }
 }
 
