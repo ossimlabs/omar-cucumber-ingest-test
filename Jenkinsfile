@@ -9,7 +9,7 @@ properties([
         ]),
         [$class: 'GithubProjectProperty', displayName: '', projectUrlStr: 'https://github.com/ossimlabs/omar-cucumber-ingest-test'],
         buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '3', daysToKeepStr: '', numToKeepStr: '20')),
-        disableConcurrentBuilds()
+        disableConcurrentBuilds(),
         timeout(time: 30, unit: "SECONDS")
 ])
 
