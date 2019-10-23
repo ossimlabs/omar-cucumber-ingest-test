@@ -11,7 +11,7 @@ properties([
         buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '3', daysToKeepStr: '', numToKeepStr: '20')),
         disableConcurrentBuilds()
 ])
-
+timeout(time: 30, unit: 'SECONDS') {
 node("${BUILD_NODE}"){
 
     stage("Checkout branch $BRANCH_NAME")
@@ -62,6 +62,7 @@ node("${BUILD_NODE}"){
         if ("${CLEAN_WORKSPACE}" == "true")
             step([$class: 'WsCleanup'])
     }
+}
 }
 
 /**
