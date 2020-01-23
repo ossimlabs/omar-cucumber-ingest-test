@@ -1,4 +1,4 @@
-targetDeployment = System.getenv("TARGET_DEPLOYMENT")
+targetDeployment = System.getenv("BRANCH_NAME")
 if (!targetDeployment) {
    targetDeployment = "dev"
 }
@@ -30,26 +30,18 @@ if (!rbtcloudRootDir) {
 
 switch(targetDeployment) {
    case "dev":
-      sqsStagingQueue = "https://${sqsStagingQueue}/320588532383/avro-dev"
-      break
-   case "stage":
-      sqsStagingQueue = "https://${sqsStagingQueue}/320588532383/avro-stage"
-      break
-   case "prod":
-      sqsStagingQueue = "https://${sqsStagingQueue}/320588532383/avro-prod"
-      break
-   case "blue":
-      sqsStagingQueue = "https://${sqsStagingQueue}/320588532383/avro-prod"
-      break
-   case "green":
-      sqsStagingQueue = "https://${sqsStagingQueue}/320588532383/avro-prod"
-      break
-   case "rel":
-      sqsStagingQueue = "https://${sqsStagingQueue}/320588532383/avro-release"
-      break
+       sqsStagingQueue = "https://${sqsStagingQueue}/320588532383/avro-dev"
+       rbtcloudRootDir = "https://omar-${targetDeployment}.${domainName}"
+       break
+   case "master":
+        sqsStagingQueue = "https://${sqsStagingQueue}/320588532383/avro-release"
+        rbtcloudRootDir = "https://omar.${domainName}"
+        break
    default:
+        println("\nBad TARGET_DEPLOYMENT provided: <${targetDeployment}>. Defaulting to dev.")
+        rbtcloudRootDir = "https://omar-dev.${domainName}"
         sqsStagingQueue = "NOT_ASSIGNED"
-      break
+        break
 }
 stagingService = "${rbtcloudRootDir}/omar-stager/dataManager"
 wmsServerProperty = "${rbtcloudRootDir}/omar-wms/wms"
