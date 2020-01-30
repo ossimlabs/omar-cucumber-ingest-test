@@ -38,6 +38,7 @@ timeout(time: 30, unit: 'MINUTES') {
         } finally {
             stage("Publish Report") {
                 step([$class             : 'CucumberReportPublisher',
+                      buildStatus        : 'FAILURE',
                       fileExcludePattern : '',
                       fileIncludePattern : '**/ingest.json',
                       ignoreFailedTests  : false,
