@@ -1,6 +1,5 @@
 package omar.cucumber.ingest.test
 
-import omar.cucumber.ingest.test.SecurityManagerCheck
 
 class CucumberTest {
     public void startTest() {
@@ -36,13 +35,6 @@ class CucumberTest {
                 '--glue', main_path,
                 resource_path]
 
-        SecurityManagerCheck secManager = new SecurityManagerCheck()
-        System.setSecurityManager(secManager)
-        
-        try {
-            cucumber.api.cli.Main.main(arguments)
-        } catch (SecurityException e) {
-            //put what you want to happen when exit is called
-        }
+        cucumber.api.cli.Main.main(arguments)
     }
 }
