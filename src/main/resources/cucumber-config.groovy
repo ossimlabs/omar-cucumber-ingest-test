@@ -164,10 +164,10 @@ image_files = [
     s3_staging_data:[
         images:[
             image_01:[
-                image_id:"s3://o2-test-data/direct-test/celtic/007/po_105215_pan_0000000.ntf",
+                image_id:"https://o2-test-data.s3.amazonaws.com/direct-test/celtic/007/po_105215_pan_0000000.ntf",
                 file_name:"po_105215_pan_0000000.ntf",
                 observation_time:"2003-01-23T12:33:30.000Z",
-                url:"s3://o2-test-data/direct-test/celtic/007/po_105215_pan_0000000.ntf"
+                url:"https://o2-test-data.s3.amazonaws.com/direct-test/celtic/007/po_105215_pan_0000000.ntf"
             ],
             image_02:[
                 image_id:"/data/direct-test/celtic/staged/007/po_105215_pan_0000000.ntf",
