@@ -29,11 +29,26 @@ timeout(time: 30, unit: 'MINUTES') {
         }
 
         try {
-            stage("Run Test") {
-                sh """
+            withCredentials([
+                    [$class          : 'UsernamePasswordMultiBinding',
+                     credentialsId   : 'curlCredentials',
+                     usernameVariable: 'ORG_GRADLE_PROJECT_cUname',
+                     passwordVariable: 'ORG_GRADLE_PROJECT_cPword'],
+                    [$class          : 'AmazonWebServicesCredentialsBinding',
+                     credentialsId   : 'awsCredentials',
+                     accessKeyVariable: 'ORG_GRADLE_PROJECT_awsKeyId',
+                     secretKeyVariable: 'ORG_GRADLE_PROJECT_awsSecretKey']
+            ]) {
+                stage("Run Test") {
+                    AWS_CONFIG_FILE = env.WORKSPACE
+                    createAWSFiles("$ORG_GRADLE_PROJECT_awsKeyId", "$ORG_GRADLE_PROJECT_awsSecretKey")
+                    sh """
                     export DISPLAY=":1"
-                    ./gradlew run
-                """
+                    ./gradlew run \
+                        -PcUname="$ORG_GRADLE_PROJECT_cUname" \
+                        -PcPword="$ORG_GRADLE_PROJECT_cPword" \
+                    """
+                }
             }
         } finally {
             stage("Publish Report") {
@@ -92,4 +107,18 @@ String dockerTagSuffixOrEmpty() {
     // We want to use the branch name if built in a multi-branch pipeline.
     // Otherwise we want no tag to be used in order to not override the default tag.
     if (env.BRANCH_NAME != null) return "${env.BRANCH_NAME}" else return ""
+}
+
+/**
+ * Creates the AWS credentials and config to be able to access AWS.
+ */
+def createAWSFiles(String awsKeyId, String awsSecretKey) {
+    sh """
+        echo "[default]" >> credentials
+        echo "aws_access_key_id=$awsKeyId" >> credentials
+        echo "aws_secret_acces_key=$awsSecretKey" >> credentials
+        echo "[default]" >> config
+        echo "region=us-east-1" >> config
+        echo "output=json" >> config
+    """
 }

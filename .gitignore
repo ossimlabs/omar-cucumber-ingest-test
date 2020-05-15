@@ -9,3 +9,5 @@ tomcat.*
 .DS_Store
 bin
 reports
+
+*.feature

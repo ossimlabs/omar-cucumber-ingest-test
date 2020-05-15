@@ -6,6 +6,19 @@ A java application that runs a cucumber test against the O2 environment sqs-stag
 # Quickstart
 
 ## Gradle Commands
+You'll need to set up an AWS config and credentials files for local testing.
+    
+    1. Create a directory in your home called `.aws`. Example `~/.aws`.
+    
+    2. Create a file called `config` in `~/.aws`. The below is an example of the `config` file.
+        [default]
+        region=us-east-1
+        output=json
+    
+    3. Create a file called `credentials` in `~/.aws`. The below is an example of the `credentials` file.
+        [default]
+        aws_access_key_id=<the AWS key from an IAM user>
+        aws_secret_access_key=<the AWS access key from an IAM user>
 
 To run ingest test in Jenkins or locally
  ```
