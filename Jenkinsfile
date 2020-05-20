@@ -40,7 +40,6 @@ timeout(time: 30, unit: 'MINUTES') {
                      secretKeyVariable: 'ORG_GRADLE_PROJECT_awsSecretKey']
             ]) {
                 stage("Run Test") {
-                    AWS_CONFIG_FILE = env.WORKSPACE
                     createAWSFiles("$ORG_GRADLE_PROJECT_awsKeyId", "$ORG_GRADLE_PROJECT_awsSecretKey")
                     sh """
                     export DISPLAY=":1"
@@ -79,12 +78,12 @@ timeout(time: 30, unit: 'MINUTES') {
                     withCredentials([]) {
                         sh """
                            export DISPLAY=":1"
-                           docker login $DOCKER_REGISTRY_PUBLIC_UPLOAD_URL \
-                            --username=$ORG_GRADLE_PROJECT_dockerRegistryUsername \
-                            --password=$ORG_GRADLE_PROJECT_dockerRegistryPassword
-                           ./gradlew pushDockerImage \
-                               -PossimMavenProxy=${MAVEN_DOWNLOAD_URL} \
-                               -PbuildVersion=${dockerTagSuffixOrEmpty()}
+//                           docker login $DOCKER_REGISTRY_PUBLIC_UPLOAD_URL \
+//                            --username=$ORG_GRADLE_PROJECT_dockerRegistryUsername \
+//                            --password=$ORG_GRADLE_PROJECT_dockerRegistryPassword
+//                           ./gradlew pushDockerImage \
+//                               -PossimMavenProxy=${MAVEN_DOWNLOAD_URL} \
+//                               -PbuildVersion=${dockerTagSuffixOrEmpty()}
                         """
                     }
                 }
@@ -114,11 +113,11 @@ String dockerTagSuffixOrEmpty() {
  */
 def createAWSFiles(String awsKeyId, String awsSecretKey) {
     sh """
-        echo "[default]" >> credentials
-        echo "aws_access_key_id=$awsKeyId" >> credentials
-        echo "aws_secret_acces_key=$awsSecretKey" >> credentials
-        echo "[default]" >> config
-        echo "region=us-east-1" >> config
-        echo "output=json" >> config
+        echo "[default]" > ~/.aws/credentials
+        echo "aws_access_key_id=$awsKeyId" >> ~/.aws/credentials
+        echo "aws_secret_acces_key=$awsSecretKey" >> ~/.aws/credentials
+        echo "[default]" > ~/.aws/config
+        echo "region=us-east-1" >> ~/.aws/config
+        echo "output=json" >> ~/.aws/config
     """
 }
