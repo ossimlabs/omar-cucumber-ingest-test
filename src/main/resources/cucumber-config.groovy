@@ -40,7 +40,7 @@ switch(targetDeployment) {
    default:
         println("\nBad TARGET_DEPLOYMENT provided: <${targetDeployment}>. Defaulting to dev.")
         rbtcloudRootDir = "https://omar-dev.${domainName}"
-        sqsStagingQueue = "NOT_ASSIGNED"
+        sqsStagingQueue = "https://${sqsStagingQueue}/320588532383/avro-dev"
         break
 }
 stagingService = "${rbtcloudRootDir}/omar-stager/dataManager"
